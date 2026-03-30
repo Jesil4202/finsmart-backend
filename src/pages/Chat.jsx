@@ -57,7 +57,8 @@ ${summary.recentExpenses.map(e => `- ${e.category}: ₹${e.amount} for "${e.note
       }))
 
     try {
-      const res = await fetch("http://localhost:5000/api/ai/insights", {
+      const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await fetch(`${BASE_URL}/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
         body: JSON.stringify({
