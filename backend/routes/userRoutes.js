@@ -1,10 +1,12 @@
 import express from 'express';
-import { loginUser, getUser } from '../controllers/userController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { loginUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+  res.json({ message: 'User route working' });
+});
+
 router.post('/login', loginUser);
-router.get('/', protect, getUser);
 
 export default router;
