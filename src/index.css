@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+  }
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-2xl;
+  }
+  .glass-input {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all;
+  }
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.4)] transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-emerald-500/30;
+  background-image: radial-gradient(circle at 50% -20%, #312e81 0%, #020617 80%);
+  background-attachment: fixed;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors; }
+input, select, textarea { color-scheme: dark; }

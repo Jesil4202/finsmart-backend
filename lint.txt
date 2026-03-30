@@ -1,0 +1,20 @@
+﻿
+C:\Users\moham\Documents\Projects\finsmart\backend\config\db.js
+   8:41  error  'process' is not defined  no-undef
+  15:5   error  'process' is not defined  no-undef
+
+C:\Users\moham\Documents\Projects\finsmart\backend\controllers\aiController.js
+  6:21  error  'process' is not defined  no-undef
+
+C:\Users\moham\Documents\Projects\finsmart\backend\controllers\userController.js
+  7:33  error  'process' is not defined  no-undef
+
+C:\Users\moham\Documents\Projects\finsmart\backend\middleware\authMiddleware.js
+   8:41  error  'process' is not defined           no-undef
+  11:14  error  'error' is defined but never used  no-unused-vars
+
+C:\Users\moham\Documents\Projects\finsmart\server.js
+  35:14  error  'process' is not defined  no-undef
+
+Γ£û 7 problems (7 errors, 0 warnings)
+
