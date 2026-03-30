@@ -21,7 +21,7 @@ export function FinanceProvider({ children }) {
     if (!getToken()) { setLoading(false); return; }
     try {
       const [userRes, budgetRes, expenseRes, groupRes] = await Promise.all([
-        fetch(`${API_URL}/user/user`, { headers: getHeaders() }),
+        fetch(`${API_URL}/user`, { headers: getHeaders() }),
         fetch(`${API_URL}/budget`, { headers: getHeaders() }),
         fetch(`${API_URL}/expenses`, { headers: getHeaders() }),
         fetch(`${API_URL}/group/details`, { headers: getHeaders() })
