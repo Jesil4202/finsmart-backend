@@ -16,15 +16,8 @@ connectDB();
 
 const app = express();
 
-// CORS - must be before all routes
-const corsOptions = {
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
 // Routes
