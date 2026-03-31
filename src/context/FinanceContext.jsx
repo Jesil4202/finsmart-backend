@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const FinanceContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:5001/api';
 
 export function FinanceProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -20,39 +20,44 @@ export function FinanceProvider({ children }) {
   const fetchUserData = async () => {
     if (!getToken()) { setLoading(false); return; }
     try {
-      const [userRes, budgetRes, expenseRes, groupRes] = await Promise.all([
-        fetch(`${API_URL}/user`, { headers: getHeaders() }),
-        fetch(`${API_URL}/budget`, { headers: getHeaders() }),
-        fetch(`${API_URL}/expenses`, { headers: getHeaders() }),
-        fetch(`${API_URL}/group/details`, { headers: getHeaders() })
-      ]);
-
-      if (userRes.ok) {
-        const u = await userRes.json();
-        setUser(u);
-      } else {
-        // Token invalid or expired
+      // 1. Validate token & get user — if this fails, log out
+      const userRes = await fetch(`${API_URL}/user`, { headers: getHeaders() });
+      if (!userRes.ok) {
         localStorage.removeItem('fs_token');
         setUser(null);
         setLoading(false);
         return;
       }
+      const u = await userRes.json();
+      setUser(u);
 
-      if (budgetRes.ok) {
-         const bData = await budgetRes.json();
-         if (bData && bData.categoryBudgets) {
-            setBudgets(bData.categoryBudgets);
-            setUser(prev => ({...prev, income: bData.monthlyGoal}));
-         }
+      // 2. Load budget, expenses, group independently so one failure can't block others
+      const [budgetRes, expenseRes, groupRes] = await Promise.allSettled([
+        fetch(`${API_URL}/budget`, { headers: getHeaders() }),
+        fetch(`${API_URL}/expenses`, { headers: getHeaders() }),
+        fetch(`${API_URL}/group/details`, { headers: getHeaders() }),
+      ]);
+
+      if (budgetRes.status === 'fulfilled' && budgetRes.value.ok) {
+        const bData = await budgetRes.value.json();
+        if (bData && bData.categoryBudgets) {
+          setBudgets(bData.categoryBudgets);
+          setUser(prev => ({ ...prev, income: bData.monthlyGoal }));
+        }
       }
-      if (expenseRes.ok) setExpenses(await expenseRes.json());
-      if (groupRes.ok) {
-        const g = await groupRes.json();
-        setGroup(g);
+
+      if (expenseRes.status === 'fulfilled' && expenseRes.value.ok) {
+        setExpenses(await expenseRes.value.json());
       }
-      
+
+      if (groupRes.status === 'fulfilled' && groupRes.value.ok) {
+        const g = await groupRes.value.json();
+        // g is null when user has no group — that's a valid state, not an error
+        setGroup(g || null);
+      }
+
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error('Error fetching user data:', err);
     } finally {
       setLoading(false);
     }

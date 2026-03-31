@@ -40,9 +40,11 @@ export const joinGroup = async (req, res) => {
 export const getGroupDetails = async (req, res) => {
   try {
     const group = await Group.findOne({ members: req.user.id }).lean();
-    if (!group) return res.status(404).json({ message: 'No group found' });
     
-    // Fetch members array mapping
+    // Return null (not 404) when user has no group — this is not an error state
+    if (!group) return res.json(null);
+    
+    // Fetch member details to enrich the response
     const users = await User.find({ userId: { $in: group.members } });
     group.memberDetails = users.map(u => ({ userId: u.userId, name: u.name }));
     

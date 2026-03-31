@@ -57,10 +57,16 @@ ${summary.recentExpenses.map(e => `- ${e.category}: ₹${e.amount} for "${e.note
       }))
 
     try {
-      const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+      
+      // Use AbortController for timeout — Render free tier can cold-start in ~30s
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      
       const res = await fetch(`${BASE_URL}/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${getToken()}` },
+        signal: controller.signal,
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemPrompt }] },
           contents: [
@@ -70,12 +76,30 @@ ${summary.recentExpenses.map(e => `- ${e.category}: ₹${e.amount} for "${e.note
           generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
         })
       });
-      const data = await res.json()
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't interpret that response!"
-      setMessages(prev => [...prev, { role: 'assistant', text: reply }])
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(`AI API error ${res.status}:`, errText);
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!reply) {
+        console.error('Unexpected AI response structure:', JSON.stringify(data));
+        throw new Error('Empty AI response');
+      }
+      
+      setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
     } catch (error) {
-      console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', text: `Connection disrupted. Please verify your internet connection or server status.`, isError: true }])
+      console.error("Chat error:", error.message);
+      const isTimeout = error.name === 'AbortError';
+      const errorMsg = isTimeout
+        ? "⏱️ The AI took too long to respond (server may be waking up). Please try again in a moment."
+        : "⚠️ Connection issue. Please check your internet or try again shortly.";
+      setMessages(prev => [...prev, { role: 'assistant', text: errorMsg, isError: true }]);
     }
     setLoading(false)
   }
